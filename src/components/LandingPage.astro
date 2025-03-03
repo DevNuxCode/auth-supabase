@@ -1,0 +1,73 @@
+---
+import { FaShieldAlt, FaChartLine, FaUsers } from 'react-icons/fa';
+---
+
+<div class="bg-white">
+  <!-- Hero Section -->
+  <div class="relative isolate px-6 pt-14 lg:px-8">
+    <div class="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
+      <div class="text-center">
+        <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+          Sistema de Gestión Empresarial
+        </h1>
+        <p class="mt-6 text-lg leading-8 text-gray-600">
+          Gestiona tu negocio de manera eficiente con nuestra plataforma integral
+        </p>
+        <div class="mt-10 flex items-center justify-center gap-x-6">
+          <a href="/login" class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+            Iniciar Sesión
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features Section -->
+  <div class="py-24 sm:py-32">
+    <div class="mx-auto max-w-7xl px-6 lg:px-8">
+      <div class="mx-auto max-w-2xl lg:text-center">
+        <h2 class="text-base font-semibold leading-7 text-indigo-600">Soluciones</h2>
+        <p class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          Todo lo que necesitas para tu negocio
+        </p>
+      </div>
+      <div class="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
+        <dl class="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
+          <div class="flex flex-col items-center">
+            <div class="mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-indigo-600">
+              <FaShieldAlt className="h-8 w-8 text-white" />
+            </div>
+            <dt class="text-xl font-semibold leading-7 text-gray-900">
+              Seguridad Avanzada
+            </dt>
+            <dd class="mt-4 text-base leading-7 text-gray-600 text-center">
+              Protección de datos y acceso seguro a tu información
+            </dd>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-indigo-600">
+              <FaChartLine className="h-8 w-8 text-white" />
+            </div>
+            <dt class="text-xl font-semibold leading-7 text-gray-900">
+              Análisis en Tiempo Real
+            </dt>
+            <dd class="mt-4 text-base leading-7 text-gray-600 text-center">
+              Estadísticas y reportes detallados de tu negocio
+            </dd>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-indigo-600">
+              <FaUsers className="h-8 w-8 text-white" />
+            </div>
+            <dt class="text-xl font-semibold leading-7 text-gray-900">
+              Gestión de Usuarios
+            </dt>
+            <dd class="mt-4 text-base leading-7 text-gray-600 text-center">
+              Control total sobre usuarios y permisos
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>

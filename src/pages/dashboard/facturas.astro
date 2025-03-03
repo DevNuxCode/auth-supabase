@@ -1,0 +1,46 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import CrudTable from '../../components/CrudTable';
+import AddNewForm from '../../components/AddNewForm';
+import { supabase } from '../../lib/supabase';
+
+// Check authentication first
+const { data: sessionData } = await supabase.auth.getSession();
+if (!sessionData.session) {
+  return Astro.redirect('/login');
+}
+
+// Only fetch data if authenticated
+const { data: invoices } = await supabase
+  .from('invoices')
+  .select(`
+    *,
+    orders (
+      id
+    )
+  `);
+
+const { data: orders } = await supabase
+  .from('orders')
+  .select('id');
+
+const columns = [
+  { key: 'order_id', label: 'Order ID', type: 'select', options: orders?.map(o => o.id) || [] },
+  { key: 'amount', label: 'Amount', type: 'number' },
+  { key: 'status', label: 'Status', type: 'select', options: ['pending', 'paid', 'cancelled'] },
+];
+---
+
+<DashboardLayout>
+  <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+    <h1 class="text-2xl font-bold mb-4 dark:text-white">Invoices</h1>
+    <AddNewForm client:load tableName="invoices" columns={columns} onSuccess={() => window.location.reload()} />
+    <CrudTable
+      client:load
+      tableName="invoices"
+      columns={columns}
+      data={invoices || []}
+      onRefresh={() => window.location.reload()}
+    />
+  </div>
+</DashboardLayout>

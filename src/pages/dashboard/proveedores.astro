@@ -1,0 +1,36 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import CrudTable from '../../components/CrudTable';
+import AddNewForm from '../../components/AddNewForm';
+import { supabase } from '../../lib/supabase';
+
+// Check authentication first
+const { data: sessionData } = await supabase.auth.getSession();
+if (!sessionData.session) {
+  return Astro.redirect('/login');
+}
+
+// Only fetch data if authenticated
+const { data: suppliers } = await supabase.from('suppliers').select('*');
+
+const columns = [
+  { key: 'name', label: 'Name', type: 'text' },
+  { key: 'email', label: 'Email', type: 'email' },
+  { key: 'phone', label: 'Phone', type: 'text' },
+  { key: 'address', label: 'Address', type: 'text' },
+];
+---
+
+<DashboardLayout>
+  <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+    <h1 class="text-2xl font-bold mb-4 dark:text-white">Suppliers</h1>
+    <AddNewForm client:load tableName="suppliers" columns={columns} onSuccess={() => window.location.reload()} />
+    <CrudTable
+      client:load
+      tableName="suppliers"
+      columns={columns}
+      data={suppliers || []}
+      onRefresh={() => window.location.reload()}
+    />
+  </div>
+</DashboardLayout>

@@ -1,0 +1,47 @@
+---
+import { supabase } from '../lib/supabase';
+import Sidebar from '../components/Sidebar';
+
+// Check authentication - store the result instead of immediately redirecting
+const { data } = await supabase.auth.getSession();
+const isAuthenticated = !!data.session;
+
+// We'll handle the redirect in the component, not during server rendering
+---
+
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+  </head>
+  <body class="h-full">
+    {isAuthenticated ? (
+      <div class="flex h-full">
+        <Sidebar client:load />
+        <main class="ml-64 flex-1 p-8 dark:bg-gray-900 dark:text-white">
+          <slot />
+        </main>
+      </div>
+    ) : (
+      <div id="redirect-login"></div>
+    )}
+  </body>
+</html>
+
+<script>
+  // Initialize dark mode from local storage
+  const isDark = localStorage.getItem('darkMode') === 'true';
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+
+  // Handle redirect on client side if not authenticated
+  const redirectElement = document.getElementById('redirect-login');
+  if (redirectElement) {
+    window.location.href = '/login';
+  }
+</script>

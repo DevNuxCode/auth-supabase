@@ -1,104 +1,124 @@
-import React from 'react';
-import {
-  Drawer,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Box,
-  Divider,
-  styled,
-} from '@mui/material';
-import {
-  Dashboard,
-  Inventory,
-  People,
-  Receipt,
-  LocalShipping,
-  ShoppingCart,
-  Description,
-} from '@mui/icons-material';
-import { useTranslation } from 'react-i18next';
-
-const drawerWidth = 240;
-
-const DrawerHeader = styled('div')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  padding: theme.spacing(0, 1),
-  ...theme.mixins.toolbar,
-  justifyContent: 'flex-end',
-}));
+import React, { useState, useEffect } from 'react';
+import { 
+  FaBox, 
+  FaUsers, 
+  FaUserFriends, 
+  FaShoppingCart, 
+  FaTruck, 
+  FaFileInvoice,
+  FaMoon,
+  FaSun,
+  FaSignOutAlt
+} from 'react-icons/fa';
+import { supabase } from '../lib/supabase';
 
 interface SidebarProps {
-  isOpen: boolean;
-  onToggle: () => void;
+  initialDarkMode?: boolean;
 }
 
-export default function Sidebar({ isOpen }: SidebarProps) {
-  const { t } = useTranslation();
+const Sidebar: React.FC<SidebarProps> = ({ initialDarkMode = false }) => {
+  const [darkMode, setDarkMode] = useState(initialDarkMode);
 
-  const menuItems = [
-    { text: t('dashboard'), icon: <Dashboard />, path: '/dashboard' },
-    { text: t('products'), icon: <Inventory />, path: '/products' },
-    { text: t('customers'), icon: <People />, path: '/customers' },
-    { text: t('suppliers'), icon: <LocalShipping />, path: '/suppliers' },
-    { text: t('orders'), icon: <ShoppingCart />, path: '/orders' },
-    { text: t('sales'), icon: <Receipt />, path: '/sales' },
-    { text: t('invoices'), icon: <Description />, path: '/invoices' },
-  ];
+  useEffect(() => {
+    // Check local storage for dark mode preference
+    const isDark = localStorage.getItem('darkMode') === 'true';
+    setDarkMode(isDark);
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
 
-  const handleNavigation = (path: string) => {
-    window.location.href = path;
+  const toggleDarkMode = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', String(newDarkMode));
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/';
+  };
+
+  const menuItems = [
+    { icon: FaBox, text: 'Productos', path: '/dashboard/productos' },
+    { icon: FaUserFriends, text: 'Clientes', path: '/dashboard/clientes' },
+    { icon: FaUsers, text: 'Usuarios', path: '/dashboard/usuarios' },
+    { icon: FaShoppingCart, text: 'Pedidos', path: '/dashboard/pedidos' },
+    { icon: FaTruck, text: 'Proveedores', path: '/dashboard/proveedores' },
+    { icon: FaFileInvoice, text: 'Facturas', path: '/dashboard/facturas' },
+  ];
+
   return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        width: isOpen ? drawerWidth : theme => theme.spacing(7),
-        flexShrink: 0,
-        '& .MuiDrawer-paper': {
-          width: isOpen ? drawerWidth : theme => theme.spacing(7),
-          overflowX: 'hidden',
-          transition: theme =>
-            theme.transitions.create('width', {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.enteringScreen,
-            }),
-        },
-      }}
-    >
-      <DrawerHeader />
-      <Divider />
-      <List>
-        {menuItems.map((item) => (
-          <ListItem
-            button
-            key={item.text}
-            onClick={() => handleNavigation(item.path)}
-            sx={{
-              minHeight: 48,
-              justifyContent: isOpen ? 'initial' : 'center',
-              px: 2.5,
-            }}
+    <div className={`fixed left-0 h-screen w-64 p-4 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} shadow-lg`}>
+      <div className="flex flex-col h-full">
+        <div className="flex items-center justify-center mb-8">
+          <h1 className="text-xl font-bold">Dashboard</h1>
+        </div>
+        
+        <nav className="flex-1">
+          <ul className="space-y-2">
+            {menuItems.map((item, index) => (
+              <li key={index}>
+                <a
+                  href={item.path}
+                  className={`flex items-center space-x-3 p-3 rounded-lg ${
+                    darkMode 
+                      ? 'hover:bg-gray-700' 
+                      : 'hover:bg-gray-100'
+                  }`}
+                >
+                  <item.icon className="w-5 h-5" />
+                  <span>{item.text}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="mt-auto space-y-2">
+          <button
+            onClick={toggleDarkMode}
+            className={`flex items-center space-x-3 p-3 rounded-lg w-full ${
+              darkMode 
+                ? 'hover:bg-gray-700' 
+                : 'hover:bg-gray-100'
+            }`}
           >
-            <ListItemIcon
-              sx={{
-                minWidth: 0,
-                mr: isOpen ? 3 : 'auto',
-                justifyContent: 'center',
-              }}
-            >
-              {item.icon}
-            </ListItemIcon>
-            <ListItemText
-              primary={item.text}
-              sx={{ opacity: isOpen ? 1 : 0 }}
-            />
-          </ListItem>
-        ))}
-      </List>
-    </Drawer>
+            {darkMode ? (
+              <>
+                <FaSun className="w-5 h-5" />
+                <span>Modo Claro</span>
+              </>
+            ) : (
+              <>
+                <FaMoon className="w-5 h-5" />
+                <span>Modo Oscuro</span>
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={handleLogout}
+            className={`flex items-center space-x-3 p-3 rounded-lg w-full ${
+              darkMode 
+                ? 'hover:bg-gray-700 text-red-400' 
+                : 'hover:bg-gray-100 text-red-600'
+            }`}
+          >
+            <FaSignOutAlt className="w-5 h-5" />
+            <span>Cerrar Sesión</span>
+          </button>
+        </div>
+      </div>
+    </div>
   );
-}
+};
+
+export default Sidebar;

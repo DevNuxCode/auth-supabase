@@ -1,0 +1,35 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import CrudTable from '../../components/CrudTable';
+import AddNewForm from '../../components/AddNewForm';
+import { supabase } from '../../lib/supabase';
+
+// Check authentication first
+const { data: sessionData } = await supabase.auth.getSession();
+if (!sessionData.session) {
+  return Astro.redirect('/login');
+}
+
+// Only fetch data if authenticated
+const { data: users } = await supabase.from('system_users').select('*');
+
+const columns = [
+  { key: 'name', label: 'Name', type: 'text' },
+  { key: 'email', label: 'Email', type: 'email' },
+  { key: 'role', label: 'Role', type: 'select', options: ['admin', 'user'] },
+];
+---
+
+<DashboardLayout>
+  <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+    <h1 class="text-2xl font-bold mb-4 dark:text-white">Users</h1>
+    <AddNewForm client:load tableName="system_users" columns={columns} onSuccess={() => window.location.reload()} />
+    <CrudTable
+      client:load
+      tableName="system_users"
+      columns={columns}
+      data={users || []}
+      onRefresh={() => window.location.reload()}
+    />
+  </div>
+</DashboardLayout>
