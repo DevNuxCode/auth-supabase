@@ -1,16 +1,10 @@
 ---
 import DashboardLayout from '../../layouts/DashboardLayout.astro';
-import { supabase } from '../../lib/supabase';
+import { getCurrentUser } from '../../middleware/auth';
 
-// Check authentication first
-const { data: sessionData } = await supabase.auth.getSession();
-if (!sessionData.session) {
-  return Astro.redirect('/login');
-}
-
-// Get user info only if authenticated
-const { data } = await supabase.auth.getUser();
-const userEmail = data.user?.email || 'Usuario';
+// Get user info
+const user = await getCurrentUser();
+const userEmail = user?.email || 'Usuario';
 ---
 
 <DashboardLayout>
@@ -21,20 +15,38 @@ const userEmail = data.user?.email || 'Usuario';
     </p>
     
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
-      <div class="bg-indigo-50 dark:bg-indigo-900 p-4 rounded-lg shadow">
+      <a href="/dashboard/productos" class="bg-indigo-50 dark:bg-indigo-900 p-4 rounded-lg shadow hover:shadow-md transition-shadow">
         <h3 class="font-semibold text-indigo-700 dark:text-indigo-300">Productos</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400">Gestiona tu inventario</p>
-      </div>
+      </a>
       
-      <div class="bg-green-50 dark:bg-green-900 p-4 rounded-lg shadow">
+      <a href="/dashboard/clientes" class="bg-green-50 dark:bg-green-900 p-4 rounded-lg shadow hover:shadow-md transition-shadow">
         <h3 class="font-semibold text-green-700 dark:text-green-300">Clientes</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400">Administra tus clientes</p>
-      </div>
+      </a>
       
-      <div class="bg-purple-50 dark:bg-purple-900 p-4 rounded-lg shadow">
+      <a href="/dashboard/pedidos" class="bg-purple-50 dark:bg-purple-900 p-4 rounded-lg shadow hover:shadow-md transition-shadow">
         <h3 class="font-semibold text-purple-700 dark:text-purple-300">Pedidos</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400">Revisa los pedidos activos</p>
-      </div>
+      </a>
     </div>
   </div>
 </DashboardLayout>
+
+<script>
+  // Client-side authentication check
+  import { isAuthenticated, refreshSession } from '../../middleware/auth';
+  
+  async function checkAuth() {
+    const authenticated = await isAuthenticated();
+    if (!authenticated) {
+      window.location.href = '/login';
+    } else {
+      // If authenticated, refresh session if needed
+      await refreshSession();
+    }
+  }
+  
+  // Run auth check when page loads
+  checkAuth();
+</script>

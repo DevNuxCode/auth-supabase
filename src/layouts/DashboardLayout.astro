@@ -1,12 +1,18 @@
 ---
 import { supabase } from '../lib/supabase';
 import Sidebar from '../components/Sidebar';
+import { isAuthenticated, refreshSession } from '../middleware/auth';
 
 // Check authentication - store the result instead of immediately redirecting
-const { data } = await supabase.auth.getSession();
-const isAuthenticated = !!data.session;
+const authenticated = await isAuthenticated();
 
-// We'll handle the redirect in the component, not during server rendering
+// If not authenticated, redirect to login
+if (!authenticated) {
+  return Astro.redirect('/login');
+}
+
+// If authenticated, try to refresh the session if needed
+await refreshSession();
 ---
 
 <!DOCTYPE html>
@@ -17,16 +23,12 @@ const isAuthenticated = !!data.session;
     <title>Dashboard</title>
   </head>
   <body class="h-full">
-    {isAuthenticated ? (
-      <div class="flex h-full">
-        <Sidebar client:load />
-        <main class="ml-64 flex-1 p-8 dark:bg-gray-900 dark:text-white">
-          <slot />
-        </main>
-      </div>
-    ) : (
-      <div id="redirect-login"></div>
-    )}
+    <div class="flex h-full">
+      <Sidebar client:load />
+      <main class="ml-64 flex-1 p-8 dark:bg-gray-900 dark:text-white">
+        <slot />
+      </main>
+    </div>
   </body>
 </html>
 
@@ -39,9 +41,18 @@ const isAuthenticated = !!data.session;
     document.documentElement.classList.remove('dark');
   }
 
-  // Handle redirect on client side if not authenticated
-  const redirectElement = document.getElementById('redirect-login');
-  if (redirectElement) {
-    window.location.href = '/login';
+  // Check authentication on client side
+  import { isAuthenticated } from '../middleware/auth';
+  
+  async function checkAuth() {
+    const authenticated = await isAuthenticated();
+    
+    // If not authenticated, redirect to login
+    if (!authenticated) {
+      window.location.href = '/login';
+    }
   }
+  
+  // Run auth check when page loads
+  checkAuth();
 </script>

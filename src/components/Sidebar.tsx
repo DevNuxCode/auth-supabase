@@ -18,6 +18,8 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ initialDarkMode = false }) => {
   const [darkMode, setDarkMode] = useState(initialDarkMode);
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     // Check local storage for dark mode preference
@@ -28,6 +30,20 @@ const Sidebar: React.FC<SidebarProps> = ({ initialDarkMode = false }) => {
     } else {
       document.documentElement.classList.remove('dark');
     }
+    
+    // Get user info
+    const getUserInfo = async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (data && data.user) {
+          setUserEmail(data.user.email || '');
+        }
+      } catch (error) {
+        console.error('Error getting user info:', error);
+      }
+    };
+    
+    getUserInfo();
   }, []);
 
   const toggleDarkMode = () => {
@@ -42,8 +58,16 @@ const Sidebar: React.FC<SidebarProps> = ({ initialDarkMode = false }) => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/';
+    try {
+      setIsLoading(true);
+      await supabase.auth.signOut();
+      // Clear any stored session data
+      localStorage.removeItem('supabase.auth.token');
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error signing out:', error);
+      setIsLoading(false);
+    }
   };
 
   const menuItems = [
@@ -61,6 +85,13 @@ const Sidebar: React.FC<SidebarProps> = ({ initialDarkMode = false }) => {
         <div className="flex items-center justify-center mb-8">
           <h1 className="text-xl font-bold">Dashboard</h1>
         </div>
+        
+        {userEmail && (
+          <div className={`mb-6 p-3 rounded-lg text-sm ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+            <p>Conectado como:</p>
+            <p className="font-semibold">{userEmail}</p>
+          </div>
+        )}
         
         <nav className="flex-1">
           <ul className="space-y-2">
@@ -106,14 +137,15 @@ const Sidebar: React.FC<SidebarProps> = ({ initialDarkMode = false }) => {
 
           <button
             onClick={handleLogout}
+            disabled={isLoading}
             className={`flex items-center space-x-3 p-3 rounded-lg w-full ${
               darkMode 
                 ? 'hover:bg-gray-700 text-red-400' 
                 : 'hover:bg-gray-100 text-red-600'
-            }`}
+            } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <FaSignOutAlt className="w-5 h-5" />
-            <span>Cerrar Sesión</span>
+            <span>{isLoading ? 'Cerrando sesión...' : 'Cerrar Sesión'}</span>
           </button>
         </div>
       </div>

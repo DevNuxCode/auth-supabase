@@ -1,11 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import LandingPage from '../components/LandingPage.astro';
-import { supabase } from '../lib/supabase';
+import { isAuthenticated } from '../middleware/auth';
 
 // Check if user is logged in
-const { data } = await supabase.auth.getSession();
-if (data.session) {
+const authenticated = await isAuthenticated();
+if (authenticated) {
   return Astro.redirect('/dashboard');
 }
 ---

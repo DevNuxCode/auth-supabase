@@ -1,10 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { supabase } from '../lib/supabase';
+import { isAuthenticated } from '../middleware/auth';
 
 // Check if user is logged in
-const { data } = await supabase.auth.getSession();
-if (data.session) {
+const authenticated = await isAuthenticated();
+if (authenticated) {
   return Astro.redirect('/dashboard');
 }
 ---
@@ -52,11 +53,13 @@ if (data.session) {
           <button
             type="submit"
             class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            id="login-button"
           >
             Iniciar Sesión
           </button>
         </div>
         <div id="error-message" class="text-red-500 text-center hidden"></div>
+        <div id="success-message" class="text-green-500 text-center hidden"></div>
       </form>
     </div>
   </div>
@@ -67,6 +70,8 @@ if (data.session) {
 
   const form = document.querySelector('#login-form');
   const errorMessage = document.querySelector('#error-message');
+  const successMessage = document.querySelector('#success-message');
+  const loginButton = document.querySelector('#login-button');
   
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -74,6 +79,16 @@ if (data.session) {
     if (errorMessage) {
       errorMessage.classList.add('hidden');
       errorMessage.textContent = '';
+    }
+    
+    if (successMessage) {
+      successMessage.classList.add('hidden');
+      successMessage.textContent = '';
+    }
+    
+    if (loginButton) {
+      loginButton.textContent = 'Iniciando sesión...';
+      loginButton.setAttribute('disabled', 'true');
     }
     
     const formData = new FormData(e.target as HTMLFormElement);
@@ -93,8 +108,24 @@ if (data.session) {
         } else {
           alert('Error al iniciar sesión: ' + error.message);
         }
+        
+        if (loginButton) {
+          loginButton.textContent = 'Iniciar Sesión';
+          loginButton.removeAttribute('disabled');
+        }
       } else {
-        window.location.href = '/dashboard';
+        // Store session in localStorage for better persistence
+        localStorage.setItem('supabase.auth.token', JSON.stringify(data.session));
+        
+        if (successMessage) {
+          successMessage.textContent = 'Inicio de sesión exitoso. Redirigiendo...';
+          successMessage.classList.remove('hidden');
+        }
+        
+        // Add a small delay to ensure the session is properly stored
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 1000);
       }
     } catch (err) {
       console.error('Login error:', err);
@@ -103,6 +134,11 @@ if (data.session) {
         errorMessage.classList.remove('hidden');
       } else {
         alert('Error inesperado al iniciar sesión');
+      }
+      
+      if (loginButton) {
+        loginButton.textContent = 'Iniciar Sesión';
+        loginButton.removeAttribute('disabled');
       }
     }
   });

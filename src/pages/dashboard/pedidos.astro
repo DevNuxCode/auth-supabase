@@ -3,10 +3,11 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
 import CrudTable from '../../components/CrudTable';
 import AddNewForm from '../../components/AddNewForm';
 import { supabase } from '../../lib/supabase';
+import { isAuthenticated } from '../../middleware/auth';
 
 // Check authentication first
-const { data: sessionData } = await supabase.auth.getSession();
-if (!sessionData.session) {
+const authenticated = await isAuthenticated();
+if (!authenticated) {
   return Astro.redirect('/login');
 }
 
